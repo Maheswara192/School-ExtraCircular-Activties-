@@ -20,6 +20,7 @@ const PerformanceManager = lazy(() => import('./admin/pages/PerformanceManager')
 const ParticipationAnalytics = lazy(() => import('./admin/pages/ParticipationAnalytics'));
 const AdminLayout = lazy(() => import('./admin/components/AdminLayout'));
 const PublicLayout = lazy(() => import('./components/PublicLayout')); // Public Layout
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const Loading = () => <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Loading...</div>;
 
@@ -52,6 +53,9 @@ function App() {
                 <Route path="/admin/analytics" element={<ParticipationAnalytics />} />
                 <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
               </Route>
+
+              {/* 404 Not Found */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </Router>
