@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Extra-Curriculars | Home</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">EduActive</a>
+            <div class="nav-links">
+                <a href="index.html" class="active">Home</a>
+                <a href="activities.html">Activities</a>
+                <a href="apply.html">Apply Now</a>
+                <a href="admin-login.html" class="btn btn-secondary"
+                    style="padding: 0.5rem 1rem; font-size: 0.9rem;">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero fade-in">
+        <div class="container">
+            <h1>Unlock Your Potential Beyond the Classroom</h1>
+            <p>Join our vibrant community of learners and leaders. Explore clubs, sports, arts, and innovation hubs
+                designed to help you grow.</p>
+            <div style="margin-top: 2rem;">
+                <a href="activities.html" class="btn btn-primary">Explore Activities</a>
+                <a href="apply.html" class="btn btn-secondary" style="margin-left: 1rem;">Apply Now</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Project Highlights (Dynamic) -->
+    <section class="section-padding">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 3rem;">Upcoming Events</h2>
+            <div id="featured-events" class="grid-auto">
+                <!-- Events injected via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About / Why Join -->
+    <section class="section-padding" style="background: white;">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 3rem;">Why Join?</h2>
+            <div class="grid-auto">
+                <div class="card" style="text-align: center;">
+                    <h3 style="font-size: 2rem; margin-bottom: 1rem;">🏆</h3>
+                    <h3>Leadership</h3>
+                    <p>Develop critical leadership skills through student council and team sports.</p>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <h3 style="font-size: 2rem; margin-bottom: 1rem;">🎨</h3>
+                    <h3>Creativity</h3>
+                    <p>Express yourself through arts, drama, music, and creative writing.</p>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <h3 style="font-size: 2rem; margin-bottom: 1rem;">🤝</h3>
+                    <h3>Community</h3>
+                    <p>Make lifelong friends and connect with mentors across different grades.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 EduActive School Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

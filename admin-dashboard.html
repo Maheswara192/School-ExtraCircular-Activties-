@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | EduActive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-sidebar {
+            width: 250px;
+            background: white;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid #e2e8f0;
+            padding: 2rem;
+        }
+
+        .admin-content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 1rem;
+            color: var(--text-muted);
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            background: #eff6ff;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .nav-item:hover {
+            background: #f8fafc;
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                display: none;
+            }
+
+            .admin-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+        <a href="index.html" class="logo" style="display: block; margin-bottom: 3rem;">EduActive</a>
+
+        <div onclick="switchTab('applications')" id="tab-applications" class="nav-item active">
+            📋 Manage Applications
+        </div>
+        <div onclick="switchTab('events')" id="tab-events" class="nav-item">
+            📅 Manage Events
+        </div>
+        <div onclick="switchTab('activities')" id="tab-activities" class="nav-item">
+            🧩 Manage Activities
+        </div>
+
+        <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid #e2e8f0;">
+            <button onclick="adminLogout()" class="btn btn-danger" style="width: 100%;">Logout</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1 id="page-title">Applications</h1>
+            <span class="badge badge-accepted" style="font-size: 1rem;">Admin Mode</span>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="grid-auto" style="margin-bottom: 2rem; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+            <div class="card" style="text-align: center; padding: 1.5rem;">
+                <h3 style="font-size: 2.5rem; color: var(--primary-color);" id="stats-total">-</h3>
+                <p class="text-muted">Total Events</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 1.5rem;">
+                <h3 style="font-size: 2.5rem; color: var(--success);" id="stats-present">-</h3>
+                <p class="text-muted">Present (Active)</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 1.5rem;">
+                <h3 style="font-size: 2.5rem; color: var(--secondary-color);" id="stats-upcoming">-</h3>
+                <p class="text-muted">Upcoming</p>
+            </div>
+        </div>
+
+        <!-- Applications View -->
+        <div id="view-applications">
+            <div class="table-container fade-in">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Applied For</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applications-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Events View -->
+        <div id="view-events" style="display: none;">
+            <div style="margin-bottom: 2rem; text-align: right;">
+                <button onclick="openEventModal()" class="btn btn-primary">+ Add New Event</button>
+            </div>
+            <div class="table-container fade-in">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Details</th>
+                            <th>Category</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="events-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Activities View -->
+        <div id="view-activities" style="display: none;">
+            <div style="margin-bottom: 2rem; text-align: right;">
+                <button onclick="openActivityModal()" class="btn btn-primary">+ Add New Category</button>
+            </div>
+            <div class="table-container fade-in">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Clubs / Sub-Activities</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activities-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Event Modal -->
+    <div id="event-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+        <div class="card" style="background: white; width: 90%; max-width: 600px; padding: 2rem; position: relative;">
+            <button onclick="closeEventModal()"
+                style="position: absolute; top: 1rem; right: 1rem; border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h2 id="event-modal-title" style="margin-bottom: 1.5rem;">Add Event</h2>
+
+            <form id="event-form">
+                <input type="hidden" id="evt-id">
+                <div class="form-group">
+                    <label>Event Name</label>
+                    <input type="text" id="evt-name" class="form-control" required>
+                </div>
+                <div class="grid-auto" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="evt-start-date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="evt-end-date" class="form-control" required>
+                    </div>
+                </div>
+                <div class="grid-auto" style="grid-template-columns: 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Time</label>
+                        <input type="time" id="evt-time" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Venue</label>
+                    <input type="text" id="evt-venue" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="evt-category" class="form-control" required>
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="evt-desc" class="form-control" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Event</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Activity Modal -->
+    <div id="activity-admin-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+        <div class="card" style="background: white; width: 90%; max-width: 500px; padding: 2rem; position: relative;">
+            <button onclick="closeActivityAdminModal()"
+                style="position: absolute; top: 1rem; right: 1rem; border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h2 id="act-modal-title" style="margin-bottom: 1.5rem;">Add Category</h2>
+
+            <form id="activity-form">
+                <input type="hidden" id="orig-cat-name">
+                <div class="form-group">
+                    <label>Category Name</label>
+                    <input type="text" id="cat-name" class="form-control" required placeholder="e.g. Sports">
+                </div>
+                <div class="form-group">
+                    <label>Sub-Activities (Separate by comma)</label>
+                    <textarea id="cat-subs" class="form-control" rows="5" placeholder="Football, Basketball, Tennis..."
+                        required></textarea>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Enter club names
+                        separated by commas.</p>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Category</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Application Modal -->
+    <div id="application-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+        <div class="card" style="background: white; width: 90%; max-width: 500px; padding: 2rem; position: relative;">
+            <button onclick="closeAppModal()"
+                style="position: absolute; top: 1rem; right: 1rem; border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h2 style="margin-bottom: 1.5rem;">Edit Application</h2>
+
+            <form id="edit-app-form">
+                <input type="hidden" id="edit-app-id">
+                <div class="form-group">
+                    <label>Student Name</label>
+                    <input type="text" id="edit-app-name" class="form-control" required>
+                </div>
+                <div class="grid-auto" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Class/Grade</label>
+                        <input type="text" id="edit-app-grade" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Roll Number</label>
+                        <input type="text" id="edit-app-roll" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="edit-app-notes" class="form-control" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Update Details</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

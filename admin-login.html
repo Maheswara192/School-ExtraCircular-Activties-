@@ -1,0 +1,59 @@
+renm<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | EduActive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, white 50%, #f1f5f9 50%);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="card fade-in" style="width: 100%; max-width: 400px; padding: 2.5rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 class="logo" style="margin-bottom: 0.5rem;">EduActive</h1>
+                <p class="text-muted">Admin Portal Access</p>
+            </div>
+
+            <form id="admin-login-form">
+                <div class="form-group">
+                    <label for="username">Email Address</label>
+                    <input type="email" id="username" class="form-control" placeholder="mahisince2002@gmail.com"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+            </form>
+            <p id="error-msg" style="color: var(--danger); text-align: center; margin-top: 1rem; display: none;">Invalid
+                credentials</p>
+
+            <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                <a href="index.html">← Back to Home</a>
+            </p>
+        </div>
+    </div>
+
+
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

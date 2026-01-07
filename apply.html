@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply Now | EduActive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">EduActive</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="activities.html">Activities</a>
+                <a href="apply.html" class="active">Apply Now</a>
+                <a href="admin-login.html" class="btn btn-secondary"
+                    style="padding: 0.5rem 1rem; font-size: 0.9rem;">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section-padding">
+        <div class="container">
+            <div class="card" style="max-width: 800px; margin: 0 auto;">
+                <h2 style="margin-bottom: 1.5rem; text-align: center;">Student Activity Application Form</h2>
+
+                <form id="application-form">
+                    <div class="grid-auto"
+                        style="grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label for="name">Student Name *</label>
+                            <input type="text" id="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="grid-auto"
+                        style="grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label for="grade">Class / Grade *</label>
+                            <input type="text" id="grade" class="form-control" required placeholder="e.g. 10-A">
+                        </div>
+                        <div class="form-group">
+                            <label for="roll">Roll Number *</label>
+                            <input type="text" id="roll" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input type="tel" id="phone" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #e2e8f0;">
+
+                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Activity Details</h3>
+
+                    <div class="grid-auto"
+                        style="grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label for="category">Main Activity Category *</label>
+                            <select id="category" class="form-control" required>
+                                <option value="">Select Category...</option>
+                                <!-- Categories populated by JS -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sub-activity">Sub-Activity (Club) *</label>
+                            <select id="sub-activity" class="form-control" required disabled>
+                                <option value="">Select Category First...</option>
+                                <!-- Populated based on category -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid-auto" style="grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label for="event-pref">Select Specific Event (Optional)</label>
+                            <select id="event-pref" class="form-control">
+                                <option value="">General Application (No specific event)</option>
+                                <!-- Events populated by JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Additional Notes / Motivation</label>
+                        <textarea id="notes" class="form-control" rows="4"
+                            placeholder="Why do you want to join?"></textarea>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <button type="submit" class="btn btn-primary" style="width: 100%; max-width: 300px;">Submit
+                            Application</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 EduActive School Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
