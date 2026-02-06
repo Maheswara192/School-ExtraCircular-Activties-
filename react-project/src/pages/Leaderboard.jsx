@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 // Navbar removed
 import api from '../api';
 import { useSocket } from '../context/SocketContext';
@@ -28,7 +28,7 @@ const Leaderboard = () => {
     }, []);
 
     // Fetch Leaderboard Data
-    const fetchLeaderboard = async () => {
+    const fetchLeaderboard = useCallback(async () => {
         if (!selectedEvent) return;
         setLoading(true);
         try {
@@ -41,12 +41,12 @@ const Leaderboard = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [selectedEvent, level]);
 
     // Initial Fetch & Dependency on Selection
     useEffect(() => {
         fetchLeaderboard();
-    }, [selectedEvent, level]);
+    }, [fetchLeaderboard]);
 
     // Real-time Updates via Socket.IO
     useEffect(() => {
@@ -65,7 +65,7 @@ const Leaderboard = () => {
         return () => {
             socket.off('leaderboard_update', handleUpdate);
         };
-    }, [socket, selectedEvent, level]);
+    }, [socket, selectedEvent, level, fetchLeaderboard]);
 
     const getMedal = (rank) => {
         switch (rank) {

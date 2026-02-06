@@ -60,7 +60,7 @@ const PerformanceManager = () => {
                         });
                     }
                     setScores(existingScores);
-                } catch (e) {
+                } catch {
                     console.warn("No existing scores loaded");
                 }
 

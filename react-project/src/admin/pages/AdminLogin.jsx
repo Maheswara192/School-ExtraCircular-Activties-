@@ -15,6 +15,18 @@ const AdminLogin = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        // Client-side validation
+        if (!email || !password) {
+            setError('Please fill in all fields');
+            return;
+        }
+
+        if (!email.includes('@')) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -24,7 +36,15 @@ const AdminLogin = () => {
             navigate('/admin/dashboard');
         } catch (err) {
             console.error("Login failed:", err);
-            setError(err.toString());
+            // User-friendly error messages
+            const errorMessage = err.response?.data?.message || err.message || 'Login failed';
+            if (errorMessage.toLowerCase().includes('invalid') || errorMessage.toLowerCase().includes('incorrect')) {
+                setError('Invalid email or password. Please try again.');
+            } else if (errorMessage.toLowerCase().includes('not found')) {
+                setError('No account found with this email address.');
+            } else {
+                setError(errorMessage);
+            }
         } finally {
             setLoading(false);
         }

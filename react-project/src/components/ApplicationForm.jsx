@@ -6,32 +6,83 @@ import { FaUser, FaBuilding, FaIdCard, FaPhone, FaShapes, FaRunning, FaPen, FaUs
 import { useSocket } from '../context/SocketContext';
 
 /**
- * ApplicationForm Component (Dynamic Team/Individual)
+ * ============================================================================
+ * APPLICATION FORM COMPONENT
+ * ============================================================================
+ * Dynamic form that adapts to both individual and team event applications.
+ * 
+ * Features:
+ * - Auto-detects event type (individual/team) and adjusts form fields
+ * - Real-time slot availability updates via Socket.IO
+ * - Comprehensive field-level validation
+ * - Team member management (add/remove/substitute)
+ * - Duplicate application prevention
+ * - Event capacity enforcement
+ * 
+ * Props: None (uses React Router location state for pre-selected category)
+ * 
+ * State Management:
+ * - formData: All form field values
+ * - errors: Field-level validation errors
+ * - currentEventConfig: Selected event's configuration (type, min/max players)
+ * - availability: Real-time slot availability data
+ * - isSubmitting: Loading state during form submission
  */
 const ApplicationForm = () => {
+    // ========================================================================
+    // HOOKS & INITIALIZATION
+    // ========================================================================
+
     const location = useLocation();
     const navigate = useNavigate();
     const socket = useSocket();
+
+    // Pre-selected category from navigation (if user clicked from Activities page)
     const preSelectedCategory = location.state?.category || '';
 
+    // ========================================================================
+    // STATE MANAGEMENT
+    // ========================================================================
+
+    // All available events and category groupings
     const [events, setEvents] = useState([]);
     const [categories, setCategories] = useState({});
 
-    // Dynamic Configuration based on selected "SubActivity" (which maps to an Event Name now)
+    // Current event configuration (determines if team fields are shown)
     const [currentEventConfig, setCurrentEventConfig] = useState(null);
-    const [availability, setAvailability] = useState({ available: true, remaining: null, total: null });
 
-    // Form State
+    // Real-time availability tracking
+    // available: boolean - whether event has slots
+    // remaining: number - how many slots left
+    // total: number - total capacity
+    const [availability, setAvailability] = useState({
+        available: true,
+        remaining: null,
+        total: null
+    });
+
+    // Form data state
     const [formData, setFormData] = useState({
-        // Primary Applicant (Captain/Individual)
-        name: '', phone: '', grade: '', section: '', rollNumber: '',
+        // Primary Applicant (Captain for team events, Individual for solo events)
+        name: '',
+        phone: '',
+        grade: '',
+        section: '',
+        rollNumber: '',
         category: preSelectedCategory,
         subActivity: '',
         eventId: '',
-        // Team Details
+
+        // Team-specific fields (only used when event type is 'team')
         teamName: '',
         teamMembers: [] // Array of { name, rollNumber, isSubstitute }
     });
+
+    // Field-level validation errors
+    const [errors, setErrors] = useState({});
+
+    // Submission loading state
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -124,6 +175,10 @@ const ApplicationForm = () => {
     const handlePrivateChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        // Clear error for this field when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
     };
 
     // Team Management
@@ -155,22 +210,56 @@ const ApplicationForm = () => {
         setFormData(prev => ({ ...prev, teamMembers: updated }));
     };
 
+    const validateForm = () => {
+        const newErrors = {};
+
+        // Basic field validation
+        if (!formData.name.trim()) newErrors.name = 'Name is required';
+        if (!formData.grade.trim()) newErrors.grade = 'Grade is required';
+        if (!formData.section.trim()) newErrors.section = 'Section is required';
+        if (!formData.rollNumber.trim()) newErrors.rollNumber = 'Roll number is required';
+
+        // Phone validation
+        if (!formData.phone.trim()) {
+            newErrors.phone = 'Phone is required';
+        } else if (!/^\d{10}$/.test(formData.phone.trim())) {
+            newErrors.phone = 'Phone must be 10 digits';
+        }
+
+        // Team validation
+        if (isTeamEvent) {
+            if (!formData.teamName.trim()) {
+                newErrors.teamName = 'Team name is required';
+            }
+
+            const totalPlayers = 1 + formData.teamMembers.filter(m => !m.isSubstitute).length;
+            if (totalPlayers < currentEventConfig.minPlayers) {
+                newErrors.team = `Minimum ${currentEventConfig.minPlayers} players required (including captain)`;
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Clear previous errors
+        setErrors({});
 
         if (availability.remaining !== null && availability.remaining <= 0) {
             toast.error("Sorry, this event is full!");
             return;
         }
 
-        // Validation
-        if (currentEventConfig && currentEventConfig.type === 'team') {
-            const totalPlayers = 1 + formData.teamMembers.filter(m => !m.isSubstitute).length;
-            if (totalPlayers < currentEventConfig.minPlayers) {
-                toast.error(`Minimum ${currentEventConfig.minPlayers} players are required for this team event.`);
-                return;
-            }
+        // Validate form
+        if (!validateForm()) {
+            toast.error('Please fix the errors in the form');
+            return;
         }
+
+        setIsSubmitting(true);
 
         const payload = {
             studentName: formData.name,
@@ -191,7 +280,20 @@ const ApplicationForm = () => {
             navigate('/');
         } catch (error) {
             console.error("Application failed", error);
-            toast.error('Failed to submit application: ' + (error.response?.data?.message || 'Server Error'));
+            const errorMsg = error.response?.data?.message || 'Server Error';
+
+            // Handle specific error cases
+            if (errorMsg.toLowerCase().includes('already applied')) {
+                toast.error('You have already applied for this event!');
+            } else if (errorMsg.toLowerCase().includes('full')) {
+                toast.error('Sorry, this event is now full!');
+            } else if (errorMsg.toLowerCase().includes('capacity')) {
+                toast.error('Event capacity reached!');
+            } else {
+                toast.error('Failed to submit application: ' + errorMsg);
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -274,14 +376,62 @@ const ApplicationForm = () => {
             <div className="grid-auto" style={{ gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                 <div className="form-group">
                     <label className="form-label"><FaUser /> Name *</label>
-                    <input name="name" required className="form-control" value={formData.name} onChange={handlePrivateChange} />
+                    <input
+                        name="name"
+                        required
+                        className={`form-control ${errors.name ? 'error' : ''}`}
+                        value={formData.name}
+                        onChange={handlePrivateChange}
+                    />
+                    {errors.name && <span className="error-text">{errors.name}</span>}
                 </div>
             </div>
             <div className="grid-auto" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                <div className="form-group"><label className="form-label">Grade *</label><input name="grade" required className="form-control" value={formData.grade} onChange={handlePrivateChange} /></div>
-                <div className="form-group"><label className="form-label">Section *</label><input name="section" required className="form-control" value={formData.section} onChange={handlePrivateChange} /></div>
-                <div className="form-group"><label className="form-label">Roll No. *</label><input name="rollNumber" required className="form-control" value={formData.rollNumber} onChange={handlePrivateChange} /></div>
-                <div className="form-group"><label className="form-label">Phone *</label><input name="phone" required className="form-control" value={formData.phone} onChange={handlePrivateChange} /></div>
+                <div className="form-group">
+                    <label className="form-label">Grade *</label>
+                    <input
+                        name="grade"
+                        required
+                        className={`form-control ${errors.grade ? 'error' : ''}`}
+                        value={formData.grade}
+                        onChange={handlePrivateChange}
+                    />
+                    {errors.grade && <span className="error-text">{errors.grade}</span>}
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Section *</label>
+                    <input
+                        name="section"
+                        required
+                        className={`form-control ${errors.section ? 'error' : ''}`}
+                        value={formData.section}
+                        onChange={handlePrivateChange}
+                    />
+                    {errors.section && <span className="error-text">{errors.section}</span>}
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Roll No. *</label>
+                    <input
+                        name="rollNumber"
+                        required
+                        className={`form-control ${errors.rollNumber ? 'error' : ''}`}
+                        value={formData.rollNumber}
+                        onChange={handlePrivateChange}
+                    />
+                    {errors.rollNumber && <span className="error-text">{errors.rollNumber}</span>}
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Phone *</label>
+                    <input
+                        name="phone"
+                        required
+                        className={`form-control ${errors.phone ? 'error' : ''}`}
+                        value={formData.phone}
+                        onChange={handlePrivateChange}
+                        placeholder="10 digits"
+                    />
+                    {errors.phone && <span className="error-text">{errors.phone}</span>}
+                </div>
             </div>
 
             {/* TEAM SECTION */}
@@ -289,8 +439,22 @@ const ApplicationForm = () => {
                 <div className="section-padding" style={{ borderTop: '2px dashed #cbd5e1', marginTop: '1rem' }}>
                     <div className="form-group" style={{ maxWidth: '50%;', marginBottom: '1.5rem' }}>
                         <label className="form-label"><FaUsers /> Team Name *</label>
-                        <input name="teamName" required className="form-control" value={formData.teamName} onChange={handlePrivateChange} placeholder="e.g. The Avengers" />
+                        <input
+                            name="teamName"
+                            required
+                            className={`form-control ${errors.teamName ? 'error' : ''}`}
+                            value={formData.teamName}
+                            onChange={handlePrivateChange}
+                            placeholder="e.g. The Avengers"
+                        />
+                        {errors.teamName && <span className="error-text">{errors.teamName}</span>}
                     </div>
+
+                    {errors.team && (
+                        <div className="alert alert-warning" style={{ marginBottom: '1rem', padding: '0.75rem', background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '0.5rem', color: '#92400e' }}>
+                            {errors.team}
+                        </div>
+                    )}
 
                     <h4 className="mb-4">Team Members</h4>
 
@@ -339,10 +503,15 @@ const ApplicationForm = () => {
             <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={availability.remaining !== null && availability.remaining <= 0}
-                style={{ width: '100%', fontSize: '1.1rem', padding: '1rem', opacity: (availability.remaining !== null && availability.remaining <= 0) ? 0.6 : 1 }}
+                disabled={(availability.remaining !== null && availability.remaining <= 0) || isSubmitting}
+                style={{
+                    width: '100%',
+                    fontSize: '1.1rem',
+                    padding: '1rem',
+                    opacity: ((availability.remaining !== null && availability.remaining <= 0) || isSubmitting) ? 0.6 : 1
+                }}
             >
-                {availability.remaining !== null && availability.remaining <= 0 ? 'Event Full' : 'Submit Application'}
+                {isSubmitting ? 'Submitting...' : (availability.remaining !== null && availability.remaining <= 0 ? 'Event Full' : 'Submit Application')}
             </button>
         </form>
     );

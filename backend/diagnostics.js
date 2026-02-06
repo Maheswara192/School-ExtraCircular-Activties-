@@ -15,16 +15,17 @@ const diagnose = async () => {
         await connectDB();
 
         // 2. Check Admin User
-        const admin = await User.findOne({ email: 'admin@school.com' });
+        const adminEmail = 'mahisince2002@gmail.com';
+        const admin = await User.findOne({ email: adminEmail });
         if (!admin) {
-            console.log("❌ Admin user 'admin@school.com' NOT FOUND.");
+            console.log(`❌ Admin user '${adminEmail}' NOT FOUND.`);
             // Auto-seed here if needed, but report first
             console.log("Creating Admin...");
             await User.create({
                 username: 'admin',
-                email: 'admin@school.com',
+                email: adminEmail,
                 password: 'admin123',
-                phone: '9999999999',
+                phone: '7675857684',
                 role: 'admin'
             });
             console.log("✅ Admin Created.");
@@ -34,10 +35,10 @@ const diagnose = async () => {
             console.log(`   Phone: ${admin.phone}`);
 
             // Fix phone if missing
-            if (!admin.phone) {
-                admin.phone = '9999999999';
+            if (!admin.phone || admin.phone !== '7675857684') {
+                admin.phone = '7675857684';
                 await admin.save();
-                console.log("   -> Phone number updated to 9999999999");
+                console.log("   -> Phone number updated to 7675857684");
             }
         }
 

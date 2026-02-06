@@ -5,30 +5,26 @@ import io from 'socket.io-client';
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
-    const [socket, setSocket] = useState(null);
+    // Initialize socket once
+    const [socket] = useState(() => io('http://localhost:5000', {
+        withCredentials: true,
+        transports: ['websocket', 'polling'],
+        autoConnect: true,
+    }));
 
     useEffect(() => {
-        // Ensure this matches your backend URL/Port
-        const newSocket = io('http://localhost:5000', {
-            withCredentials: true,
-            transports: ['websocket', 'polling'], // Prioritize websocket
-            autoConnect: true,
+        socket.on('connect', () => {
+            console.log('Socket Connected:', socket.id);
         });
 
-        newSocket.on('connect', () => {
-            console.log('Socket Connected:', newSocket.id);
-        });
-
-        newSocket.on('disconnect', () => {
+        socket.on('disconnect', () => {
             console.log('Socket Disconnected');
         });
 
-        setSocket(newSocket);
-
         return () => {
-            newSocket.close();
+            socket.close();
         };
-    }, []);
+    }, [socket]);
 
     return (
         <SocketContext.Provider value={socket}>
@@ -37,4 +33,5 @@ export const SocketProvider = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSocket = () => useContext(SocketContext);

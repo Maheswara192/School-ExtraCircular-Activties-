@@ -1,6 +1,5 @@
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useState, useEffect, useContext } from 'react';
 import adminApi from '../admin/utils/api';
 
 const AuthContext = createContext(null);
@@ -65,4 +64,5 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

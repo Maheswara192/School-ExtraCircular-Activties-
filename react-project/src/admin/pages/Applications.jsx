@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSocket } from '../../context/SocketContext';
 import { toast } from 'react-hot-toast';
 import StatusBadge from '../components/StatusBadge';
@@ -8,7 +8,6 @@ import '../admin.css';
 
 const Applications = () => {
     const [applications, setApplications] = useState([]);
-    const [filteredApplications, setFilteredApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState('All');
 
@@ -50,11 +49,23 @@ const Applications = () => {
         }
     };
 
-    // Fetch apps
+    // OPTIMIZATION: Wrap fetchApplications in useCallback to prevent recreation
+    const fetchApplications = useCallback(async () => {
+        try {
+            const res = await adminApi.get('/applications');
+            const data = Array.isArray(res.data) ? res.data : (res.data.data || []);
+            setApplications(data);
+        } catch (error) {
+            console.error("Failed to fetch applications", error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Fetch apps once on mount
     useEffect(() => {
         fetchApplications();
-        fetchApplications();
-    }, []);
+    }, [fetchApplications]);
 
     // Real-Time Updates
     const socket = useSocket();
@@ -79,49 +90,36 @@ const Applications = () => {
         };
     }, [socket]);
 
-    // Filter effect
-    useEffect(() => {
+    // OPTIMIZATION: Memoize filtered applications to avoid recalculation on every render
+    const filteredApplications = useMemo(() => {
         if (statusFilter === 'All') {
-            setFilteredApplications(applications);
-        } else {
-            setFilteredApplications(applications.filter(app => app.status && app.status.toLowerCase() === statusFilter.toLowerCase()));
+            return applications;
         }
+        return applications.filter(app => app.status && app.status.toLowerCase() === statusFilter.toLowerCase());
     }, [statusFilter, applications]);
 
-    const fetchApplications = async () => {
-        try {
-            const res = await adminApi.get('/applications');
-            const data = Array.isArray(res.data) ? res.data : (res.data.data || []);
-            setApplications(data);
-            setFilteredApplications(data);
-        } catch (error) {
-            console.error("Failed to fetch applications", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleStatusUpdate = async (id, newStatus) => {
+    // OPTIMIZATION: Wrap handlers in useCallback
+    const handleStatusUpdate = useCallback(async (id, newStatus) => {
         try {
             await adminApi.put(`/applications/${id}`, { status: newStatus });
             setApplications(prev => prev.map(app => app._id === id ? { ...app, status: newStatus } : app));
         } catch (error) {
             toast.error("Failed to update status: " + (error.response?.data?.message || "Unknown error"));
         }
-    };
+    }, []);
 
-    const handleDelete = async (id) => {
+    const handleDelete = useCallback(async (id) => {
         if (window.confirm("Are you sure you want to delete this application?")) {
             try {
                 await adminApi.delete(`/applications/${id}`);
                 setApplications(prev => prev.filter(app => app._id !== id));
-            } catch (error) {
+            } catch {
                 toast.error("Failed to delete application");
             }
         }
-    };
+    }, []);
 
-    const downloadCSV = () => {
+    const downloadCSV = useCallback(() => {
         const headers = ["ID,Student Name,Class,Roll Number,Phone,Activity,Status,Date"];
         const rows = filteredApplications.map(app => [
             app._id,
@@ -144,7 +142,7 @@ const Applications = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    };
+    }, [filteredApplications]);
 
     return (
         <div>

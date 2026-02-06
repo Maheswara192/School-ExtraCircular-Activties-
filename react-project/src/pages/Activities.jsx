@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 // Navbar removed
 import ActivityCard from '../components/ActivityCard';
 import api from '../api';
@@ -26,7 +26,7 @@ const ICONS = {
 };
 
 const Activities = () => {
-    const [categories, setCategories] = useState({});
+    const [events, setEvents] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
 
     useEffect(() => {
@@ -36,23 +36,26 @@ const Activities = () => {
                 const response = await api.get('/events?status=present&limit=100');
                 // Support both Paginated and Array formats
                 const eventsList = Array.isArray(response.data) ? response.data : (response.data.data || []);
-
-                const catMap = {};
-                eventsList.forEach(evt => {
-                    const cat = evt.category;
-                    if (!catMap[cat]) {
-                        catMap[cat] = [];
-                    }
-                    // Store the full event object to show details
-                    catMap[cat].push(evt);
-                });
-                setCategories(catMap);
+                setEvents(eventsList);
             } catch (error) {
                 console.error("Failed to load categories", error);
             }
         };
         fetchCategories();
     }, []);
+
+    // OPTIMIZATION: Memoize category mapping to avoid recalculation on every render
+    const categories = useMemo(() => {
+        const catMap = {};
+        events.forEach(evt => {
+            const cat = evt.category;
+            if (!catMap[cat]) {
+                catMap[cat] = [];
+            }
+            catMap[cat].push(evt);
+        });
+        return catMap;
+    }, [events]);
 
     return (
         <>
